@@ -1,0 +1,42 @@
+version: '3.3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my_php_app
+    ports:
+      - "8080:80" # Mapping the container's port 80 to host's port 8080
+    depends_on:
+      - db # Refers to the MySQL service (db) below
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+
+  db:
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: password # Root password for MySQL
+      MYSQL_DATABASE: infs3202_MJC-main # Name of the default database
+      MYSQL_USER: infs3208_MJC # User to be created
+      MYSQL_PASSWORD: infs3208_MJC_pw # User's password
+    volumes:
+      - db_data:/var/lib/mysql # Store MySQL data on a volume
+    ports:
+      - "3306:3306" # Expose MySQL on port 3306 for internal communication
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      - PMA_HOST=db # Host is the MySQL service 'db'
+      - MYSQL_ROOT_PASSWORD=password # Match with the MySQL root password
+    ports:
+      - "8081:80" # Expose phpMyAdmin on port 8081
+    depends_on:
+      - db
+
+volumes:
+  db_data:

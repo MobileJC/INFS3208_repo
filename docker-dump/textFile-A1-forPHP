@@ -1,0 +1,2 @@
+docker build -t a1:Chan .
+docker run -d --name cca1_nginx_php -it -p 80:80 a1:Chan

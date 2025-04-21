@@ -1,0 +1,75 @@
+# First Stage: Builder
+FROM ubuntu:22.04 AS builder
+
+# Maintainer Information
+LABEL version="1.0"
+LABEL maintainer="Wilkinson John Chan wilkinsonjohn.chan@student.uq.edu.au"
+
+# Define the PHP version variable with a default value
+ARG PHP_FPM_VER=8.2
+
+# Set noninteractive mode for apt-get to avoid tzdata prompt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set the timezone environment variables
+ENV TZ=Australia/Brisbane
+
+# Install necessary packages, including software-properties-common for add-apt-repository
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    curl \
+    unzip \
+    git \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update && apt-get install -y \
+    php${PHP_FPM_VER}-cli \
+    php${PHP_FPM_VER}-mbstring \
+    php${PHP_FPM_VER}-xml \
+    php${PHP_FPM_VER}-zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy composer.json from the conf folder (where dependencies are defined)
+COPY conf/composer.json ./
+
+# Install PHP dependencies (production only, optimize autoloader)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Second Stage: Production using Alpine-based Image
+FROM php:8.2-fpm-alpine
+
+# Maintainer Information
+LABEL version="1.0"
+LABEL maintainer="Wilkinson John Chan wilkinsonjohn.chan@student.uq.edu.au"
+
+# Install Nginx and PHP extensions
+RUN apk add --no-cache nginx supervisor \
+    && docker-php-ext-install pdo pdo_mysql
+
+# Set up Nginx configuration
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+
+# Copy the application files
+COPY src/ /var/www/html/
+
+# Copy the vendor folder from the builder stage
+COPY --from=builder /vendor /var/www/vendor
+
+# Set the working directory
+WORKDIR /var/www/html
+
+# Expose port 80 and 443
+EXPOSE 80 443
+
+# Healthcheck command
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD curl -f http://localhost/ || exit 1
+
+# Define volume for dynamic code updates
+VOLUME ["/var/www/html"]
+
+# Start Nginx and PHP-FPM using supervisord
+COPY conf/supervisord.conf /etc/supervisord.conf
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+

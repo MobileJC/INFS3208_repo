@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yml convert
+    kompose.version: 1.21.0 (992df58d8)
+  labels:
+    io.kompose.service: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: web
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yml convert
+        kompose.version: 1.21.0 (992df58d8)
+      labels:
+        io.kompose.service: web
+    spec:
+      containers:
+      - name: my-php-app  # Keep the container name as it is (without the tag)
+        image: my-php-app:latest  # Specify the image with the tag here
+        imagePullPolicy: IfNotPresent  # This ensures it will use the local image if available
+        env:
+        - name: APACHE_RUN_GROUP
+          value: www-data
+        - name: APACHE_RUN_USER
+          value: www-data
+        ports:
+        - containerPort: 80
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null

@@ -1,0 +1,45 @@
+version: '3.3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my_php_app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html # Mount the entire project into the container
+    depends_on:
+      - db # Refers to the MySQL service (db) below
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+
+  db: # Service name 'db', which is used as the hostname in your CodeIgniter Database.php configuration
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: password # Match with the sql password in Database.php
+      MYSQL_DATABASE: infs3202_MJC-main # Change to the database name in phpMyAdmin
+      MYSQL_USER: infs3208_MJC # phpMyAdmin username
+      MYSQL_PASSWORD: infs3208_MJC_pw #phpMyAdmin password
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      - PMA_HOST=db # Refers to the MySQL service (db) above
+      - MYSQL_ROOT_PASSWORD=password # Match with the db service
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+
