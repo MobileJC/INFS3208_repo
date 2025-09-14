@@ -1,4 +1,4 @@
-#Assigment 1
+# Assigment 1
 By: Wilkinson John Chan <wilkinsonjohn.chan@uq.edu.au>
 
 ## Environmental Setup
@@ -18,7 +18,7 @@ To build this docker image, run the following docker shell command, in the proje
 docker build -t a1:Chan .
 ```
 
-##To Run
+## To Run
 ```bash
 docker run -p 80:80 -d -v src:/var/www/html --name cca1_nginx_php a1:Chan
 ```
