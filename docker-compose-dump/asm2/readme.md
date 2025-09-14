@@ -1,7 +1,7 @@
-#Assigment 2
+# Assigment 2
 By: Wilkinson John Chan s4727761 <wilkinsonjohn.chan@uq.edu.au>
 
-#Operating instructions
+# Operating instructions
 This zip file contains two files
  readme.md (this file)
  dockerfile
@@ -23,7 +23,7 @@ The dockerfile should be located under cca2/src/php, and the dockerfile-compose.
 mv dockerfile cca2/src/php && mv docker-composer.yml cca2
 ```
 
-##To Run
+## To Run
 Execute the following command to run all the containers.
 ```bash
 docker-compose up -d
